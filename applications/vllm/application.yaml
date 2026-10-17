@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vllm
+  namespace: argocd
+  # No deletion finalizer: removing this example must not cascade-delete serving resources.
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/nawaz-dev/ai-platform-engineering.git
+    targetRevision: 41f34f1a35f534260e83c743d4ac7b732c6f9e87
+    path: helm/vllm
+    helm:
+      releaseName: vllm
+      # Use the pinned chart defaults; no workload overrides.
+  destination:
+    # Argo CD registered cluster name, not merely a kubectl context.
+    name: k3d-fde-gpu-v2
+    namespace: llm-serving
+  syncPolicy:
+    # Manual sync for the ownership handover; automated sync/pruning is omitted.
+    syncOptions:
+      - CreateNamespace=true
+      - FailOnSharedResource=true
