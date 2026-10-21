@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vllm-dev
+  namespace: argocd
+spec:
+  project: default
+
+  sources:
+    - repoURL: https://github.com/nawaz-dev/ai-platform-engineering.git
+      targetRevision: main
+      path: helm/vllm
+      helm:
+        releaseName: vllm
+        valueFiles:
+          - $values/environments/dev/vllm/values.yaml
+
+    - repoURL: https://github.com/nawaz-dev/ai-gitops.git
+      targetRevision: main
+      ref: values
+
+  destination:
+    server: https://k3d-fde-gpu-v2-serverlb:6443
+    namespace: llm-serving
+
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=false

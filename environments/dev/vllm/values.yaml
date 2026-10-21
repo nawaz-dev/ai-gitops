@@ -1,0 +1,208 @@
+# ==========================================================
+# ENTERPRISE vLLM HELM CONFIGURATION
+# ==========================================================
+
+# Application
+microserviceName: vllm
+deployToCluster: true
+replicaCount: 1
+
+# Deployment strategy
+strategy:
+  type: Recreate
+
+autoscaling:
+  enabled: false
+
+# ==========================================================
+# NVIDIA GPU RUNTIME
+# ==========================================================
+
+runtimeClassName: nvidia
+
+# Critical: prevents Kubernetes from injecting VLLM_PORT
+# as a service URI.
+enableServiceLinks: false
+
+nodeSelector:
+  kubernetes.io/hostname: k3d-fde-gpu-v2-agent-0
+
+tolerations: []
+affinity: {}
+
+# ==========================================================
+# CONTAINER IMAGE AND MODEL CONFIGURATION
+# ==========================================================
+
+image:
+  ImageFullurl: "vllm/vllm-openai:v0.10.2"
+  imagePullPolicy: IfNotPresent
+
+  containerPort: 8000
+  containerPortName: http
+  portProtocol: TCP
+
+  args:
+    - "--model"
+    - "Qwen/Qwen2.5-0.5B-Instruct"
+    - "--served-model-name"
+    - "qwen-small"
+    - "--dtype"
+    - "half"
+    - "--max-model-len"
+    - "1024"
+    - "--gpu-memory-utilization"
+    - "0.60"
+    - "--max-num-seqs"
+    - "2"
+    - "--host"
+    - "0.0.0.0"
+    - "--port"
+    - "8000"
+
+# ==========================================================
+# NETWORKING
+# ==========================================================
+
+service:
+  type: ClusterIP
+  ServicePort: 8000
+  portName: http
+  containerTargetPort: 8000
+  protocol: TCP
+
+additionalContainerPorts:
+  enabled: false
+
+additionalServicePorts:
+  enabled: false
+
+# ==========================================================
+# COMPUTE RESOURCES
+# ==========================================================
+
+resources:
+  requests:
+    cpu: "1"
+    memory: 3Gi
+    nvidia.com/gpu: 1
+
+  limits:
+    cpu: "4"
+    memory: 8Gi
+    nvidia.com/gpu: 1
+
+# ==========================================================
+# ENVIRONMENT VARIABLES
+# ==========================================================
+
+env:
+  - name: HF_HOME
+    value: "/models/huggingface"
+
+  - name: NVIDIA_DRIVER_CAPABILITIES
+    value: "compute,utility"
+
+environmentVariable:
+  enabled: false
+
+# ==========================================================
+# EXISTING MODEL CACHE PVC
+# ==========================================================
+
+# Mount an existing PVC.
+# This chart does not create or delete the PVC.
+
+pvc:
+  enabled: true
+  create: false
+  volumes:
+    - claimName: vllm-model-cache
+      volumeName: model-cache
+      mountPath: /models
+      readOnly: false
+
+# ==========================================================
+# WSL2 DXCORE GPU COMPATIBILITY
+# ==========================================================
+
+customVolumeMountforMainContainer:
+  enabled: true
+  volumeMounts:
+    - name: dxcore
+      mountPath: /usr/lib/x86_64-linux-gnu/libdxcore.so
+      readOnly: true
+
+customVolumes:
+  enabled: true
+  volumes:
+    - name: dxcore
+      hostPath:
+        path: /usr/lib64/libdxcore.so
+        type: File
+
+# ==========================================================
+# HEALTH PROBES
+# ==========================================================
+
+startupProbe:
+  enabled: true
+  httpGet:
+    path: /health
+    port: http
+  periodSeconds: 10
+  failureThreshold: 90
+
+readinessProbe:
+  enabled: true
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 0
+  periodSeconds: 10
+  timeoutSeconds: 2
+  failureThreshold: 3
+  successThreshold: 1
+
+livenessProbe:
+  enabled: false
+
+# ==========================================================
+# ENTERPRISE OPTIONAL FEATURES
+# ==========================================================
+
+imagePullSecrets: []
+
+serviceAccount:
+  create: false
+  name: ""
+  annotations: {}
+
+podAnnotations: {}
+deploymentAnnotations: {}
+
+podSecurityContext: {}
+securityContext: {}
+
+commonLabels: {}
+
+configurationVolume:
+  enabled: false
+
+configMaps:
+  enabled: false
+
+customContainers:
+  enabled: false
+
+initContainers:
+  enabled: false
+
+ingress:
+  enabled: false
+
+secrets:
+  enabled: false
+
+# Reserved for future enterprise integrations.
+global: {}
