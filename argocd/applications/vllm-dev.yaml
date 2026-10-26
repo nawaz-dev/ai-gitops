@@ -8,7 +8,7 @@ spec:
 
   sources:
     - repoURL: https://github.com/nawaz-dev/ai-platform-engineering.git
-      targetRevision: 6f6cd65ec33b7b52ba897ff16060c7b558764f50
+      targetRevision: b5cea6ef520063a3c88ce3ccc8a2a46dde9d8312
       path: helm/vllm
       helm:
         releaseName: vllm
