@@ -55,6 +55,10 @@ image:
     - "0.60"
     - "--max-num-seqs"
     - "2"
+    # KV Cache Configuration
+    - "--kv-cache-dtype"
+    - "auto"
+    - "--enable-prefix-caching"
     - "--host"
     - "0.0.0.0"
     - "--port"
