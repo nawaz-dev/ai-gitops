@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+metadata:
+  name: monitoring-dev
+  namespace: argocd
+
+spec:
+  project: default
+
+  sources:
+    - repoURL: https://github.com/nawaz-dev/ai-platform-engineering.git
+      targetRevision: main
+      path: helm/monitoring
+      helm:
+        releaseName: monitoring
+        valueFiles:
+          - $values/environments/dev/monitoring/values.yaml
+
+    - repoURL: https://github.com/nawaz-dev/ai-gitops.git
+      targetRevision: main
+      ref: values
+
+  destination:
+    server: https://k3d-fde-gpu-v2-serverlb:6443
+    namespace: ai-monitoring
+
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
