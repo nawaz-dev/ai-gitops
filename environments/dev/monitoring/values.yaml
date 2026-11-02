@@ -11,7 +11,7 @@ prometheus:
 
   scrape:
     interval: 15s
-    target: vllm.llm-serving.svc.cluster.local:8000
+    target: localhost:8000
 
   retention: 15d
 
