@@ -28,4 +28,4 @@ spec:
       - CreateNamespace=true
 image:
   repository: docker.io/nawaz343/model-gateway
-  tag: ca791af7b10bdcd07370ce70ccb08e0591a6e5e9
+  tag: c5c8c045fbe8c4b3cdd2f7f5c1de73bd14f66286
