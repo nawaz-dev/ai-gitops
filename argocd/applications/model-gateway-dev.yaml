@@ -6,7 +6,6 @@ metadata:
   namespace: argocd
 spec:
   project: default
-
   sources:
     - repoURL: https://github.com/nawaz-dev/ai-platform-engineering.git
       targetRevision: main
@@ -15,18 +14,18 @@ spec:
         releaseName: model-gateway
         valueFiles:
           - $values/environments/dev/model-gateway/values.yaml
-
     - repoURL: https://github.com/nawaz-dev/ai-gitops.git
       targetRevision: main
       ref: values
-
   destination:
     server: https://kubernetes.default.svc
     namespace: llm-serving
-
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+image:
+  repository: docker.io/nawaz343/model-gateway
+  tag: c5c8c045fbe8c4b3cdd2f7f5c1de73bd14f66286
