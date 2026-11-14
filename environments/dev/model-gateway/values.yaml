@@ -1,24 +1,20 @@
 
 replicaCount: 1
-
 image:
   repository: docker.io/nawaz343/model-gateway
-  tag: ca791af7b10bdcd07370ce70ccb08e0591a6e5e9
+  tag: "b7994365531637f261a62e24c410ee3c7ca3da38"
   pullPolicy: IfNotPresent
-
 gateway:
   port: 5000
   redisAddr: redis.llm-serving.svc.cluster.local:6379
   rateLimitRPM: 60
   existingSecret: model-gateway-secrets
   modelConfigMountPath: /app/configs/models.json
-
 models:
   - model_id: qwen-small
     provider: vllm
     base_url: http://vllm.llm-serving.svc.cluster.local:8000
     provider_model_id: qwen-small
-
 resources:
   requests:
     cpu: 100m
