@@ -2,8 +2,8 @@
 replicaCount: 1
 
 image:
-  repository: quay.io/your-org/model-gateway
-  tag: "dev-initial"
+  repository: docker.io/nawaz343/model-gateway
+  tag: ca791af7b10bdcd07370ce70ccb08e0591a6e5e9
   pullPolicy: IfNotPresent
 
 gateway:
