@@ -6,7 +6,7 @@ image:
   pullPolicy: IfNotPresent
 gateway:
   port: 5000
-  redisAddr: redis.llm-serving.svc.cluster.local:6379
+  redisAddr: host.k3d.internal:6379
   rateLimitRPM: 60
   existingSecret: model-gateway-secrets
   modelConfigMountPath: /app/configs/models.json
