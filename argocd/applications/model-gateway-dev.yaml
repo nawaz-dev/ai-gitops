@@ -1,0 +1,32 @@
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: model-gateway-dev
+  namespace: argocd
+spec:
+  project: default
+
+  sources:
+    - repoURL: https://github.com/nawaz-dev/ai-platform-engineering.git
+      targetRevision: main
+      path: helm/model-gateway
+      helm:
+        releaseName: model-gateway
+        valueFiles:
+          - $values/environments/dev/model-gateway/values.yaml
+
+    - repoURL: https://github.com/nawaz-dev/ai-gitops.git
+      targetRevision: main
+      ref: values
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: llm-serving
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
