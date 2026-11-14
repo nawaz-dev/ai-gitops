@@ -2,7 +2,7 @@
 replicaCount: 1
 image:
   repository: docker.io/nawaz343/model-gateway
-  tag: "b7994365531637f261a62e24c410ee3c7ca3da38"
+  tag: "aa7113445209f4ce82c777561e02e40bf97c5a9e"
   pullPolicy: IfNotPresent
 gateway:
   port: 5000
