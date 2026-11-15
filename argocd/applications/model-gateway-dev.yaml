@@ -9,7 +9,7 @@ spec:
   sources:
     - repoURL: https://github.com/nawaz-dev/ai-platform-engineering.git
       targetRevision: main
-      path: helm/model-gateway
+      path: helm/generic-app
       helm:
         releaseName: model-gateway
         valueFiles:

@@ -1,20 +1,78 @@
+# Model Gateway values for the reusable generic-app Helm chart.
+# Argo CD destination namespace: ai-platform (dev-cluster).
+# Requires the generic-app chart to support configMaps as a list with
+# individually enabled ConfigMaps and data/binaryData key iteration.
+
+fullnameOverride: model-gateway
+
+commonLabels:
+  app.kubernetes.io/part-of: fde-ai-platform
+  platform: fde-ai
 
 replicaCount: 1
+revisionHistoryLimit: 3
+
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
 image:
   repository: docker.io/nawaz343/model-gateway
   tag: "aa7113445209f4ce82c777561e02e40bf97c5a9e"
   pullPolicy: IfNotPresent
-gateway:
-  port: 5000
-  redisAddr: 172.18.0.1:6379
-  rateLimitRPM: 60
-  existingSecret: model-gateway-secrets
-  modelConfigMountPath: /app/configs/models.json
-models:
-  - model_id: qwen-small
-    provider: vllm
-    base_url: http://vllm.llm-serving.svc.cluster.local:8000
-    provider_model_id: qwen-small
+
+imagePullSecrets: []
+
+containerPorts:
+  - name: http
+    containerPort: 5000
+    protocol: TCP
+
+# Non-sensitive application environment settings are loaded from
+# model-gateway-configmap. Avoid duplicating their names under env.
+envFrom:
+  - configMapRef:
+      name: model-gateway-configmap
+
+env:
+  - name: GATEWAY_API_KEY
+    valueFrom:
+      secretKeyRef:
+        name: model-gateway-secrets
+        key: GATEWAY_API_KEY
+
+# Individual ConfigMaps, rendered by templates/configmap.yaml.
+configMaps:
+  - name: model-gateway-configmap
+    enabled: true
+    data:
+      PORT: 5000
+      REDIS_ADDR: "172.18.0.1:6379"
+      RATE_LIMIT_RPM: 60
+      MODELS_CONFIG: /app/configs/models.json
+
+  - name: model-gateway-models
+    enabled: true
+    data:
+      models.json: |
+        {
+          "models": [
+            {
+              "model_id": "qwen-small",
+              "provider": "vllm",
+              "base_url": "http://vllm.llm-serving.svc.cluster.local:8000",
+              "provider_model_id": "qwen-small"
+            }
+          ]
+        }
+
+# This chart references an existing Secret; it does not create it.
+existingSecrets:
+  - model-gateway-secrets
+
+# Change resource sizing after observing real model-gateway usage.
 resources:
   requests:
     cpu: 100m
@@ -22,3 +80,106 @@ resources:
   limits:
     cpu: 500m
     memory: 512Mi
+
+startupProbe:
+  enabled: true
+  httpGet:
+    path: /health
+    port: http
+  periodSeconds: 5
+  failureThreshold: 30
+  timeoutSeconds: 2
+
+readinessProbe:
+  enabled: true
+  httpGet:
+    path: /health
+    port: http
+  periodSeconds: 10
+  failureThreshold: 3
+  timeoutSeconds: 2
+
+livenessProbe:
+  enabled: true
+  httpGet:
+    path: /health
+    port: http
+  periodSeconds: 20
+  failureThreshold: 3
+  timeoutSeconds: 2
+
+service:
+  enabled: true
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 5000
+      targetPort: http
+      protocol: TCP
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+  automountServiceAccountToken: false
+
+# Apply only if the image can run as uid 10001 with read-only root FS.
+# Your existing /tmp emptyDir makes temporary files writable.
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+  runAsNonRoot: true
+
+enableServiceLinks: false
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+autoscaling:
+  enabled: false
+
+ingress:
+  enabled: false
+
+volumes:
+  - name: models
+    configMap:
+      name: model-gateway-models
+  - name: tmp
+    emptyDir: {}
+
+volumeMounts:
+  - name: models
+    mountPath: /app/configs/models.json
+    subPath: models.json
+    readOnly: true
+  - name: tmp
+    mountPath: /tmp
+
+initContainers: []
+extraContainers: []
+
+networkPolicy:
+  enabled: false
+metrics:
+  enabled: false
+serviceMonitor:
+  enabled: false
+tracing:
+  enabled: false
+route:
+  enabled: false
+podDisruptionBudget:
+  enabled: false
+persistentVolumeClaims: []
