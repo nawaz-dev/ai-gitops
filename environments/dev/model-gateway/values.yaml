@@ -5,9 +5,10 @@
 
 fullnameOverride: model-gateway
 
-commonLabels:
-  app.kubernetes.io/part-of: fde-ai-platform
-  platform: fde-ai
+commonLabels: {}
+# commonLabels:
+#   app.kubernetes.io/part-of: fde-ai-platform
+#   platform: fde-ai
 
 replicaCount: 1
 revisionHistoryLimit: 3
