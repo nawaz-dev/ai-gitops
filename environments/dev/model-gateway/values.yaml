@@ -5,7 +5,8 @@
 
 fullnameOverride: model-gateway
 
-selectorLabels: {}
+selectorLabels: 
+  app.kubernetes.io/instance: model-gateway
 # selectorLabels:
 #   app.kubernetes.io/part-of: fde-ai-platform
 #   platform: fde-ai
