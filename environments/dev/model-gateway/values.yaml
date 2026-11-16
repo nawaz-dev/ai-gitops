@@ -5,8 +5,8 @@
 
 fullnameOverride: model-gateway
 
-commonLabels: {}
-# commonLabels:
+selectorLabels: {}
+# selectorLabels:
 #   app.kubernetes.io/part-of: fde-ai-platform
 #   platform: fde-ai
 
