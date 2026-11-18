@@ -64,7 +64,7 @@ configMaps:
             {
               "model_id": "qwen-small",
               "provider": "vllm",
-              "base_url": "http://vllm.llm-serving.svc.cluster.local:8000",
+              "base_url": "http://host.docker.internal:8000",
               "provider_model_id": "qwen-small"
             }
           ]
